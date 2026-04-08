@@ -7,17 +7,12 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 )
 
 func main() {
-	csvPath := flag.String("csv", "", "Specify the path to the csv file of the quiz")
+	csvPath := flag.String("csv", "problems.csv", "Specify the path to the csv file of the quiz")
 
 	flag.Parse()
-
-	if *csvPath == "" {
-		log.Fatal("Must specify the path to CSV file using -csv")
-	}
 
 	csvData, err := os.ReadFile(*csvPath)
 	if err != nil {
@@ -35,21 +30,17 @@ func main() {
 
 	fmt.Println("Welcome to the quiz. Now, answer the following questions.")
 	for index, problem := range quiz {
-		prompt, answerString := problem[0], problem[1]
-		answer, err := strconv.Atoi(answerString)
-		if err != nil {
-			log.Fatal(err)
-		}
+		promptString, answerString := problem[0], problem[1]
 
-		fmt.Printf("Problem %d - %s: ", index+1, prompt)
+		fmt.Printf("Problem %d - %s: ", index+1, promptString)
 
-		var userAnswer int
+		var userAnswer string
 		_, err = fmt.Scan(&userAnswer)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		if userAnswer == answer {
+		if userAnswer == answerString {
 			fmt.Println("Correct!")
 			correctCount++
 		} else {
