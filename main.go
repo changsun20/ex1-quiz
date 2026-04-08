@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
 )
@@ -20,19 +21,21 @@ func main() {
 	}
 
 	reader := csv.NewReader(bytes.NewReader(csvData))
-	quiz, err := reader.ReadAll()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	total := len(quiz)
-	var correctCount int
+	correctCount := 0
+	problemNumber := 1
 
 	fmt.Println("Welcome to the quiz. Now, answer the following questions.")
-	for index, problem := range quiz {
-		promptString, answerString := problem[0], problem[1]
+	for {
+		line, err := reader.Read()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			log.Fatal(err)
+		}
 
-		fmt.Printf("Problem %d - %s: ", index+1, promptString)
+		problemString, answerString := line[0], line[1]
+
+		fmt.Printf("Problem %d - %s: ", problemNumber, problemString)
 
 		var userAnswer string
 		_, err = fmt.Scan(&userAnswer)
@@ -46,7 +49,9 @@ func main() {
 		} else {
 			fmt.Println("Oh no, wrong answer")
 		}
+
+		problemNumber++
 	}
 
-	fmt.Printf("You got %d out of %d correct!\n", correctCount, total)
+	fmt.Printf("You got %d out of %d correct!\n", correctCount, problemNumber)
 }
