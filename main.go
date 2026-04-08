@@ -7,7 +7,24 @@ import (
 	"io"
 	"log"
 	"os"
+	"strings"
 )
+
+type Problem struct {
+	Question string
+	Answer   string
+}
+
+func ParseProblem(record []string) (Problem, error) {
+	if len(record) < 2 {
+		return Problem{}, fmt.Errorf("invalid record: %v", record)
+	}
+	return Problem{Question: record[0], Answer: record[1]}, nil
+}
+
+func CheckAnswer(userAnswer, correctAnswer string) bool {
+	return strings.TrimSpace(userAnswer) == strings.TrimSpace(correctAnswer)
+}
 
 func main() {
 	csvPath := flag.String("csv", "problems.csv", "Specify the path to the csv file of the quiz")
@@ -26,16 +43,19 @@ func main() {
 
 	fmt.Println("Welcome to the quiz. Now, answer the following questions.")
 	for {
-		line, err := reader.Read()
+		record, err := reader.Read()
 		if err == io.EOF {
 			break
 		} else if err != nil {
 			log.Fatal(err)
 		}
 
-		problemString, answerString := line[0], line[1]
+		problem, err := ParseProblem(record)
+		if err != nil {
+			log.Fatal(err)
+		}
 
-		fmt.Printf("Problem %d - %s: ", problemNumber, problemString)
+		fmt.Printf("Problem %d - %s: ", problemNumber, problem.Question)
 
 		var userAnswer string
 		_, err = fmt.Scan(&userAnswer)
@@ -43,7 +63,7 @@ func main() {
 			log.Fatal(err)
 		}
 
-		if userAnswer == answerString {
+		if CheckAnswer(userAnswer, problem.Answer) {
 			fmt.Println("Correct!")
 			correctCount++
 		} else {
