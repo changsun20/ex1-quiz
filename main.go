@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/csv"
 	"flag"
 	"fmt"
@@ -15,12 +14,13 @@ func main() {
 
 	flag.Parse()
 
-	csvData, err := os.ReadFile(*csvPath)
+	file, err := os.Open(*csvPath)
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer file.Close()
 
-	reader := csv.NewReader(bytes.NewReader(csvData))
+	reader := csv.NewReader(file)
 	correctCount := 0
 	problemNumber := 1
 
