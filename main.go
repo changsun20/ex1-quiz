@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 )
 
 type Problem struct {
@@ -24,6 +25,15 @@ func ParseProblem(record []string) (Problem, error) {
 
 func CheckAnswer(userAnswer, correctAnswer string) bool {
 	return strings.TrimSpace(userAnswer) == strings.TrimSpace(correctAnswer)
+}
+
+func ReadInput(answerChannel chan<- string) {
+	var userAnswer string
+	_, err := fmt.Scan(&userAnswer)
+	if err != nil {
+		log.Fatal(err)
+	}
+	answerChannel <- userAnswer
 }
 
 func main() {
@@ -57,10 +67,16 @@ func main() {
 
 		fmt.Printf("Problem %d - %s: ", problemNumber, problem.Question)
 
+		answerChannel := make(chan string, 1)
+
+		go ReadInput(answerChannel)
+
 		var userAnswer string
-		_, err = fmt.Scan(&userAnswer)
-		if err != nil {
-			log.Fatal(err)
+		select {
+		case ans := <-answerChannel:
+			userAnswer = ans
+		case <-time.After(5 * time.Second):
+			log.Fatal("You use too much time!")
 		}
 
 		if CheckAnswer(userAnswer, problem.Answer) {
